@@ -1,98 +1,92 @@
 package com.ugb.controlesbasicos;
 
 public class amigos {
-    String idAmigo;
-    String nombre;
-    String direccion;
-    String telefono;
-    String email;
-    String dui;
-    String urlFotoAmigo;
-    String urlFotoAmigoFirestore;
-    String token;
+    String _id;
+    String _rev;
+    String idProducto;
+    String codigo;
+    String descripcion;
+    String marca;
+    String presentacion;
+    String precio;
+    String urlFotoProdu;
 
-    public amigos(){}
-    public amigos(String idAmigo, String nombre, String direccion, String telefono, String email, String dui, String urlFoto, String urlFotoAmigoFirestore, String token) {
-        this.idAmigo = idAmigo;
-        this.nombre = nombre;
-        this.direccion = direccion;
-        this.telefono = telefono;
-        this.email = email;
-        this.dui = dui;
-        this.urlFotoAmigo = urlFoto;
-        this.urlFotoAmigoFirestore = urlFotoAmigoFirestore;
-        this.token = token;
+    public amigos(String _id, String _rev, String idProducto, String descripcion, String marca, String presentacion, String precio, String codigo, String urlFoto) {
+        this._id = _id;
+        this._rev = _rev;
+        this.idProducto = idProducto;
+        this.codigo = codigo;
+        this.descripcion = descripcion;
+        this.marca = marca;
+        this.presentacion = presentacion;
+        this.precio = precio;
+        this.urlFotoProdu = urlFoto;
+    }
+    public String get_id() {
+        return _id;
+    }
+    public void set_id(String _id) {
+        this._id = _id;
+    }
+    public String get_rev() {
+        return _rev;
+    }
+    public void set_rev(String _rev) {
+        this._rev = _rev;
+    }
+    public String getUrlFotoProdu() {
+        return urlFotoProdu;
     }
 
-    public String getUrlFotoAmigoFirestore() {
-        return urlFotoAmigoFirestore;
+    public void setUrlFotoProdu(String urlFotoProdu) {
+        this.urlFotoProdu = urlFotoProdu;
     }
 
-    public void setUrlFotoAmigoFirestore(String urlFotoAmigoFirestore) {
-        this.urlFotoAmigoFirestore = urlFotoAmigoFirestore;
+    public String getIdproductos() {
+        return idProducto;
     }
 
-    public String getToken() {
-        return token;
+    public void setIdproductos(String idproductos) {
+        this.idProducto = idproductos;
     }
 
-    public void setToken(String token) {
-        this.token = token;
+    public String getCodigo() {
+        return codigo;
     }
 
-    public String getUrlFotoAmigo() {
-        return urlFotoAmigo;
+    public void setCodigo(String codigo) {
+        this.codigo = codigo;
     }
 
-    public void setUrlFotoAmigo(String urlFotoAmigo) {
-        this.urlFotoAmigo = urlFotoAmigo;
+    public String getDescripcion() {
+        return descripcion;
     }
 
-    public String getIdAmigo() {
-        return idAmigo;
+    public void setDescripcion(String descripcion) {
+        this.descripcion = descripcion;
     }
 
-    public void setIdAmigo(String idAmigo) {
-        this.idAmigo = idAmigo;
+    public String getMarca() {
+        return marca;
     }
 
-    public String getNombre() {
-        return nombre;
+    public void setMarca(String marca) {
+        this.marca = marca;
     }
 
-    public void setNombre(String nombre) {
-        this.nombre = nombre;
+    public String getPresentacion() {
+        return presentacion;
     }
 
-    public String getDireccion() {
-        return direccion;
+    public void setPresentacion(String presentacion) {
+        this.presentacion = presentacion;
     }
 
-    public void setDireccion(String direccion) {
-        this.direccion = direccion;
+    public String getPrecio() {
+        return precio;
     }
 
-    public String getTelefono() {
-        return telefono;
-    }
-
-    public void setTelefono(String telefono) {
-        this.telefono = telefono;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public String getDui() {
-        return dui;
-    }
-
-    public void setDui(String dui) {
-        this.dui = dui;
+    public void setPrecio(String precio) {
+        this.precio = precio;
     }
 }
