@@ -7,6 +7,11 @@ import androidx.core.content.FileProvider;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -35,11 +40,14 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 public class MainActivity extends AppCompatActivity {
+    TextView tempVal;
+    SensorManager sensorManager;
+    Sensor sensor;
+    SensorEventListener sensorEventListener;
     Button btn;
     FloatingActionButton fab;
-    TextView tempVal;
     String accion = "nuevo";
-    String id="", rev="", idAmigo="";
+    String id="", rev="", idNota="";
     String urlCompletaFoto;
     String getUrlCompletaFotoFirestore;
     Intent tomarFotoIntent;
@@ -52,6 +60,8 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        tempVal = findViewById(R.id.lblSensorLuz);
+        activarSensorLuz();
         di = new detectarInternet(getApplicationContext());
         utls = new utilidades();
         fab = findViewById(R.id.fabListarAmigos);
@@ -78,6 +88,50 @@ public class MainActivity extends AppCompatActivity {
         obtenerToken();
         mostrarDatosAmigos();
     }
+    @Override
+    protected void onResume() {
+        iniciar();
+        super.onResume();
+    }
+    @Override
+    protected void onPause() {
+        detener();
+        super.onPause();
+    }
+    //inicio del sensor
+    private void activarSensorLuz(){
+        sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
+        sensor = sensorManager.getDefaultSensor(Sensor.TYPE_LIGHT);
+        if(sensor==null){
+            tempVal.setText("Tu telefono NO tiene sensor de Luz");
+            finish();
+        }
+        sensorEventListener = new SensorEventListener() {
+            @Override
+            public void onSensorChanged(SensorEvent sensorEvent) {
+                double valor = sensorEvent.values[0];
+                tempVal.setText("Luz: "+ valor);
+                if( valor<=20 ){
+                    getWindow().getDecorView().setBackgroundColor(Color.parseColor("#8f7193"));
+                } else if (valor<=50) {
+                    getWindow().getDecorView().setBackgroundColor(Color.parseColor("#c0a0c3"));
+                }else{
+                    getWindow().getDecorView().setBackgroundColor(Color.parseColor("#e5dde6"));
+                }
+            }
+            @Override
+            public void onAccuracyChanged(Sensor sensor, int i) {
+
+            }
+        };
+    }
+    private void iniciar(){
+        sensorManager.registerListener(sensorEventListener, sensor, 2000*1000);
+    }
+    private void detener(){
+        sensorManager.unregisterListener(sensorEventListener);
+    }
+    //fin del sensor
     private void subirFotoFirestore(){
         mostrarMsg("Subiendo Foto...");
         StorageReference storageReference = FirebaseStorage.getInstance().getReference();
@@ -113,29 +167,26 @@ public class MainActivity extends AppCompatActivity {
             tempVal = findViewById(R.id.txtnombre);
             String nombre = tempVal.getText().toString();
 
-            tempVal = findViewById(R.id.txtdireccion);
-            String direccion = tempVal.getText().toString();
+            tempVal = findViewById(R.id.txtTitulo);
+            String titulo = tempVal.getText().toString();
 
-            tempVal = findViewById(R.id.txtTelefono);
-            String tel = tempVal.getText().toString();
+            tempVal = findViewById(R.id.txtEmocion);
+            String emocion = tempVal.getText().toString();
 
-            tempVal = findViewById(R.id.txtemail);
-            String email = tempVal.getText().toString();
+            tempVal = findViewById(R.id.txtContenido);
+            String contenido = tempVal.getText().toString();
 
-            tempVal = findViewById(R.id.txtdui);
-            String dui = tempVal.getText().toString();
-
-            databaseReference = FirebaseDatabase.getInstance().getReference("amigos");
+            databaseReference = FirebaseDatabase.getInstance().getReference("notas");
             String key = databaseReference.push().getKey();
 
             if(miToken.equals("") || miToken==null){
                 obtenerToken();
             }
             if( miToken!=null && miToken!="" ){
-                amigos amigo = new amigos(idAmigo,nombre,direccion,tel,email,dui,urlCompletaFoto,getUrlCompletaFotoFirestore,miToken);
+                amigos amigo = new amigos(idNota,nombre,titulo,emocion,contenido,urlCompletaFoto,getUrlCompletaFotoFirestore,miToken);
                 if(key!=null){
                     databaseReference.child(key).setValue(amigo).addOnSuccessListener(aVoid->{
-                        mostrarMsg("Amigo registrado con exito.");
+                        mostrarMsg("Nota registrada con exito.");
                         abrirActividad();
                     });
                 }else{
@@ -159,7 +210,7 @@ public class MainActivity extends AppCompatActivity {
                 tomarFotoIntent.putExtra(MediaStore.EXTRA_OUTPUT, uriFotoamigo);
                 startActivityForResult(tomarFotoIntent, 1);
             }else{
-                mostrarMsg("No se pudo creaar la foto");
+                mostrarMsg("No se pudo crear la foto");
             }
         }catch (Exception e){
             mostrarMsg("Error al abrir la camara: "+ e.getMessage());
@@ -176,7 +227,7 @@ public class MainActivity extends AppCompatActivity {
                 mostrarMsg("El usuario cancelo la toma de la foto");
             }
         }catch (Exception e){
-            mostrarMsg("Error añ obtener la foto de la camara");
+            mostrarMsg("Error al obtener la foto de la camara");
         }
     }
     private File crearImagenAmigo() throws Exception{
@@ -196,31 +247,28 @@ public class MainActivity extends AppCompatActivity {
             accion = parametros.getString("accion");
 
             if(accion.equals("modificar")){
-                JSONObject jsonObject = new JSONObject(parametros.getString("amigos")).getJSONObject("value");
+                JSONObject jsonObject = new JSONObject(parametros.getString("notas")).getJSONObject("value");
                 id = jsonObject.getString("_id");
                 rev = jsonObject.getString("_rev");
-                idAmigo = jsonObject.getString("idAmigo");
+                idNota = jsonObject.getString("idNota");
 
                 tempVal = findViewById(R.id.txtnombre);
                 tempVal.setText(jsonObject.getString("nombre"));
 
-                tempVal = findViewById(R.id.txtdireccion);
-                tempVal.setText(jsonObject.getString("direccion"));
+                tempVal = findViewById(R.id.txtTitulo);
+                tempVal.setText(jsonObject.getString("titulo"));
 
-                tempVal = findViewById(R.id.txtTelefono);
-                tempVal.setText(jsonObject.getString("telefono"));
+                tempVal = findViewById(R.id.txtEmocion);
+                tempVal.setText(jsonObject.getString("emocion"));
 
-                tempVal = findViewById(R.id.txtemail);
-                tempVal.setText(jsonObject.getString("email"));
-
-                tempVal = findViewById(R.id.txtdui);
-                tempVal.setText(jsonObject.getString("dui"));
+                tempVal = findViewById(R.id.txtContenido);
+                tempVal.setText(jsonObject.getString("contenido"));
 
                 urlCompletaFoto = jsonObject.getString("urlCompletaFoto");
                 Bitmap imageBitmap = BitmapFactory.decodeFile(urlCompletaFoto);
                 img.setImageBitmap(imageBitmap);
             }else{//nuevo registro
-                idAmigo = utls.generarIdUnico();
+                idNota = utls.generarIdUnico();
             }
         }catch (Exception e){
             mostrarMsg("Error al mostrar datos: "+ e.getMessage());
@@ -233,4 +281,5 @@ public class MainActivity extends AppCompatActivity {
         Intent abrirActividad = new Intent(getApplicationContext(), lista_amigos.class);
         startActivity(abrirActividad);
     }
+
 }
