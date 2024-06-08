@@ -14,19 +14,10 @@ import android.provider.MediaStore;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
-import android.widget.RadioGroup;
-import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.android.gms.tasks.Task;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.messaging.FirebaseMessaging;
-import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.StorageReference;
-import com.google.firebase.storage.UploadTask;
 
 import org.json.JSONObject;
 
@@ -39,19 +30,18 @@ public class MainActivity extends AppCompatActivity {
     FloatingActionButton fab;
     TextView tempVal;
     String accion = "nuevo";
-    String id="", rev="", idAmigo="";
+    String id="", rev="", idPelis="";
     String urlCompletaFoto;
-    String getUrlCompletaFotoFirestore;
     Intent tomarFotoIntent;
     ImageView img;
     utilidades utls;
+    DB db;
     detectarInternet di;
-    String miToken = "";
-    DatabaseReference databaseReference;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        db = new DB(getApplicationContext(), "", null, 1);
         di = new detectarInternet(getApplicationContext());
         utls = new utilidades();
         fab = findViewById(R.id.fabListarAmigos);
@@ -61,92 +51,69 @@ public class MainActivity extends AppCompatActivity {
                 abrirActividad();
             }
         });
-        btn = findViewById(R.id.btnGuardarAgendaAmigos);
+        btn = findViewById(R.id.btnGuardarProducto);
         btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                subirFotoFirestore();
+                try {
+                    tempVal = findViewById(R.id.txtTitulo);
+                    String titulo = tempVal.getText().toString();
+
+                    tempVal = findViewById(R.id.txtSinopsis);
+                    String sinopsis = tempVal.getText().toString();
+
+                    tempVal = findViewById(R.id.txtDuracion);
+                    String duracion = tempVal.getText().toString();
+
+                    tempVal = findViewById(R.id.txtActor);
+                    String actor = tempVal.getText().toString();
+
+                    //guardar datos en el servidor
+                    JSONObject datosAmigos = new JSONObject();
+                    if(accion.equals("modificar")){
+                        datosAmigos.put("_id", id);
+                        datosAmigos.put("_rev", rev);
+                    }
+                    datosAmigos.put("idPelis", idPelis);
+                    datosAmigos.put("titulo", titulo);
+                    datosAmigos.put("sinopsis", sinopsis);
+                    datosAmigos.put("duracion", duracion);
+                    datosAmigos.put("actor", actor);
+                    datosAmigos.put("urlCompletaFoto", urlCompletaFoto);
+
+                    String respuesta = "";
+                    enviarDatosServidor objGuardarDatosServidor = new enviarDatosServidor(getApplicationContext());
+                    respuesta = objGuardarDatosServidor.execute(datosAmigos.toString()).get();
+
+                    JSONObject respuestaJSONObject = new JSONObject(respuesta);
+                    if( respuestaJSONObject.getBoolean("ok") ){
+                        id = respuestaJSONObject.getString("id");
+                        rev = respuestaJSONObject.getString("rev");
+                    }else{
+                        mostrarMsg("Error al guardar datos en el servidor");
+                    }
+                    DB db = new DB(getApplicationContext(), "",null, 1);
+                    String[] datos = new String[]{id, rev, idPelis, titulo, sinopsis, duracion, actor, urlCompletaFoto};
+                    respuesta = db.administrar_amigos(accion, datos);
+                    if(respuesta.equals("ok")){
+                        Toast.makeText(getApplicationContext(), "Pelicula guardado con exito", Toast.LENGTH_LONG).show();
+                        abrirActividad();
+                    }else{
+                        Toast.makeText(getApplicationContext(), "Error al intentar guardar la Pelicula: "+ respuesta, Toast.LENGTH_LONG).show();
+                    }
+                }catch (Exception e){
+                    Toast.makeText(getApplicationContext(), "Error: "+ e.getMessage(), Toast.LENGTH_LONG).show();
+                }
             }
         });
-        img = findViewById(R.id.btnImgAmigo);
+        img = findViewById(R.id.btnImgPelis);
         img.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 tomarFotoAmigo();
             }
         });
-        obtenerToken();
         mostrarDatosAmigos();
-    }
-    private void subirFotoFirestore(){
-        mostrarMsg("Subiendo Foto...");
-        StorageReference storageReference = FirebaseStorage.getInstance().getReference();
-        Uri file = Uri.fromFile(new File(urlCompletaFoto));
-        final StorageReference reference = storageReference.child("foto/"+file.getLastPathSegment());
-
-        final UploadTask tareaSubir = reference.putFile(file);
-        tareaSubir.addOnFailureListener(e->{
-            mostrarMsg("Error al subir la foto: "+ e.getMessage());
-        });
-        tareaSubir.addOnSuccessListener(tareaInstantanea->{
-            mostrarMsg("Foto subida con exito.");
-            Task<Uri> descargarUri = tareaSubir.continueWithTask(tarea->reference.getDownloadUrl()).addOnCompleteListener(tarea->{
-                if( tarea.isSuccessful() ){
-                    getUrlCompletaFotoFirestore = tarea.getResult().toString();
-                    guardarAmigo();
-                }else{
-                    mostrarMsg("Error al descargar la ruta de la imagen");
-                }
-            });
-        });
-    }
-    private void obtenerToken(){
-        FirebaseMessaging.getInstance().getToken().addOnCompleteListener(task -> {
-            if( !task.isSuccessful() ){
-                return;
-            }
-            miToken = task.getResult();
-        });
-    }
-    private void guardarAmigo(){
-        try {
-            tempVal = findViewById(R.id.txtnombre);
-            String nombre = tempVal.getText().toString();
-
-            tempVal = findViewById(R.id.txtdireccion);
-            String direccion = tempVal.getText().toString();
-
-            tempVal = findViewById(R.id.txtTelefono);
-            String tel = tempVal.getText().toString();
-
-            tempVal = findViewById(R.id.txtemail);
-            String email = tempVal.getText().toString();
-
-            tempVal = findViewById(R.id.txtdui);
-            String dui = tempVal.getText().toString();
-
-            databaseReference = FirebaseDatabase.getInstance().getReference("amigos");
-            String key = databaseReference.push().getKey();
-
-            if(miToken.equals("") || miToken==null){
-                obtenerToken();
-            }
-            if( miToken!=null && miToken!="" ){
-                amigos amigo = new amigos(idAmigo,nombre,direccion,tel,email,dui,urlCompletaFoto,getUrlCompletaFotoFirestore,miToken);
-                if(key!=null){
-                    databaseReference.child(key).setValue(amigo).addOnSuccessListener(aVoid->{
-                        mostrarMsg("Amigo registrado con exito.");
-                        abrirActividad();
-                    });
-                }else{
-                    mostrarMsg("Error nose pudo guardar en la base de datos");
-                }
-            }else {
-                mostrarMsg("Tu dispositivo no soporta la aplicacion");
-            }
-        }catch (Exception e){
-            Toast.makeText(getApplicationContext(), "Error: "+ e.getMessage(), Toast.LENGTH_LONG).show();
-        }
     }
     private void tomarFotoAmigo(){
         tomarFotoIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
@@ -176,7 +143,7 @@ public class MainActivity extends AppCompatActivity {
                 mostrarMsg("El usuario cancelo la toma de la foto");
             }
         }catch (Exception e){
-            mostrarMsg("Error añ obtener la foto de la camara");
+            mostrarMsg("Error aL obtener la foto de la camara");
         }
     }
     private File crearImagenAmigo() throws Exception{
@@ -196,31 +163,29 @@ public class MainActivity extends AppCompatActivity {
             accion = parametros.getString("accion");
 
             if(accion.equals("modificar")){
-                JSONObject jsonObject = new JSONObject(parametros.getString("amigos")).getJSONObject("value");
+
+                JSONObject jsonObject = new JSONObject(parametros.getString("carros")).getJSONObject("value");
                 id = jsonObject.getString("_id");
                 rev = jsonObject.getString("_rev");
-                idAmigo = jsonObject.getString("idAmigo");
+                idPelis = jsonObject.getString("idPelis");
 
-                tempVal = findViewById(R.id.txtnombre);
-                tempVal.setText(jsonObject.getString("nombre"));
+                tempVal = findViewById(R.id.txtTitulo);
+                tempVal.setText(jsonObject.getString("titulo"));
 
-                tempVal = findViewById(R.id.txtdireccion);
-                tempVal.setText(jsonObject.getString("direccion"));
+                tempVal = findViewById(R.id.txtSinopsis);
+                tempVal.setText(jsonObject.getString("sinopsis"));
 
-                tempVal = findViewById(R.id.txtTelefono);
-                tempVal.setText(jsonObject.getString("telefono"));
+                tempVal = findViewById(R.id.txtDuracion);
+                tempVal.setText(jsonObject.getString("duracion"));
 
-                tempVal = findViewById(R.id.txtemail);
-                tempVal.setText(jsonObject.getString("email"));
-
-                tempVal = findViewById(R.id.txtdui);
-                tempVal.setText(jsonObject.getString("dui"));
+                tempVal = findViewById(R.id.txtActor);
+                tempVal.setText(jsonObject.getString("actor"));
 
                 urlCompletaFoto = jsonObject.getString("urlCompletaFoto");
                 Bitmap imageBitmap = BitmapFactory.decodeFile(urlCompletaFoto);
                 img.setImageBitmap(imageBitmap);
             }else{//nuevo registro
-                idAmigo = utls.generarIdUnico();
+                idPelis = utls.generarIdUnico();
             }
         }catch (Exception e){
             mostrarMsg("Error al mostrar datos: "+ e.getMessage());
