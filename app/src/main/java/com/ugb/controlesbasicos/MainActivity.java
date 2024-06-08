@@ -18,6 +18,7 @@ import android.widget.RadioGroup;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.TabHost;
 
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -47,6 +48,7 @@ public class MainActivity extends AppCompatActivity {
     utilidades utls;
     detectarInternet di;
     String miToken = "";
+    TabHost tbh;
     DatabaseReference databaseReference;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,11 +56,16 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         di = new detectarInternet(getApplicationContext());
         utls = new utilidades();
+        tbh = findViewById(R.id.tbhBlock);
+        tbh.setup();
+        tbh.addTab(tbh.newTabSpec("BLOCK").setContent(R.id.BLOCK).setIndicator("BLOCK",null));
+        tbh.addTab(tbh.newTabSpec("CON").setContent(R.id.CONSEJOS).setIndicator("CONSEJOS",null));
+        tbh.addTab(tbh.newTabSpec("CHAT").setContent(R.id.CHAT).setIndicator("CHAT",null));
+        tbh.addTab(tbh.newTabSpec("NOTAS").setContent(R.id.NOTAS).setIndicator("NOTAS",null));
         fab = findViewById(R.id.fabListarAmigos);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View view) {
-                abrirActividad();
+            public void onClick(View view) {abrirActividad();
             }
         });
         btn = findViewById(R.id.btnGuardarAgendaAmigos);
@@ -116,14 +123,8 @@ public class MainActivity extends AppCompatActivity {
             tempVal = findViewById(R.id.txtdireccion);
             String direccion = tempVal.getText().toString();
 
-            tempVal = findViewById(R.id.txtTelefono);
-            String tel = tempVal.getText().toString();
-
             tempVal = findViewById(R.id.txtemail);
             String email = tempVal.getText().toString();
-
-            tempVal = findViewById(R.id.txtdui);
-            String dui = tempVal.getText().toString();
 
             databaseReference = FirebaseDatabase.getInstance().getReference("amigos");
             String key = databaseReference.push().getKey();
@@ -132,14 +133,13 @@ public class MainActivity extends AppCompatActivity {
                 obtenerToken();
             }
             if( miToken!=null && miToken!="" ){
-                amigos amigo = new amigos(idAmigo,nombre,direccion,tel,email,dui,urlCompletaFoto,getUrlCompletaFotoFirestore,miToken);
+                amigos amigo = new amigos(idAmigo,nombre,direccion,email,urlCompletaFoto,getUrlCompletaFotoFirestore,miToken);
                 if(key!=null){
                     databaseReference.child(key).setValue(amigo).addOnSuccessListener(aVoid->{
-                        mostrarMsg("Amigo registrado con exito.");
-                        abrirActividad();
+                        mostrarMsg("Momento registrado con exito.");
                     });
                 }else{
-                    mostrarMsg("Error nose pudo guardar en la base de datos");
+                    mostrarMsg("Error no se pudo guardar en la base de datos");
                 }
             }else {
                 mostrarMsg("Tu dispositivo no soporta la aplicacion");
@@ -176,7 +176,7 @@ public class MainActivity extends AppCompatActivity {
                 mostrarMsg("El usuario cancelo la toma de la foto");
             }
         }catch (Exception e){
-            mostrarMsg("Error añ obtener la foto de la camara");
+            mostrarMsg("Error al obtener la foto de la camara");
         }
     }
     private File crearImagenAmigo() throws Exception{
@@ -194,9 +194,9 @@ public class MainActivity extends AppCompatActivity {
         try{
             Bundle parametros = getIntent().getExtras();//Recibir los parametros...
             accion = parametros.getString("accion");
-
             if(accion.equals("modificar")){
                 JSONObject jsonObject = new JSONObject(parametros.getString("amigos")).getJSONObject("value");
+
                 id = jsonObject.getString("_id");
                 rev = jsonObject.getString("_rev");
                 idAmigo = jsonObject.getString("idAmigo");
@@ -207,14 +207,8 @@ public class MainActivity extends AppCompatActivity {
                 tempVal = findViewById(R.id.txtdireccion);
                 tempVal.setText(jsonObject.getString("direccion"));
 
-                tempVal = findViewById(R.id.txtTelefono);
-                tempVal.setText(jsonObject.getString("telefono"));
-
                 tempVal = findViewById(R.id.txtemail);
                 tempVal.setText(jsonObject.getString("email"));
-
-                tempVal = findViewById(R.id.txtdui);
-                tempVal.setText(jsonObject.getString("dui"));
 
                 urlCompletaFoto = jsonObject.getString("urlCompletaFoto");
                 Bitmap imageBitmap = BitmapFactory.decodeFile(urlCompletaFoto);
@@ -233,4 +227,5 @@ public class MainActivity extends AppCompatActivity {
         Intent abrirActividad = new Intent(getApplicationContext(), lista_amigos.class);
         startActivity(abrirActividad);
     }
+
 }
