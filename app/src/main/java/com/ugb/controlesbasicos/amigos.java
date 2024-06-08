@@ -8,11 +8,8 @@ public class amigos {
     String email;
     String dui;
     String urlFotoAmigo;
-    String urlFotoAmigoFirestore;
-    String token;
 
-    public amigos(){}
-    public amigos(String idAmigo, String nombre, String direccion, String telefono, String email, String dui, String urlFoto, String urlFotoAmigoFirestore, String token) {
+    public amigos(String idAmigo, String nombre, String direccion, String telefono, String email, String dui, String urlFoto) {
         this.idAmigo = idAmigo;
         this.nombre = nombre;
         this.direccion = direccion;
@@ -20,24 +17,6 @@ public class amigos {
         this.email = email;
         this.dui = dui;
         this.urlFotoAmigo = urlFoto;
-        this.urlFotoAmigoFirestore = urlFotoAmigoFirestore;
-        this.token = token;
-    }
-
-    public String getUrlFotoAmigoFirestore() {
-        return urlFotoAmigoFirestore;
-    }
-
-    public void setUrlFotoAmigoFirestore(String urlFotoAmigoFirestore) {
-        this.urlFotoAmigoFirestore = urlFotoAmigoFirestore;
-    }
-
-    public String getToken() {
-        return token;
-    }
-
-    public void setToken(String token) {
-        this.token = token;
     }
 
     public String getUrlFotoAmigo() {
