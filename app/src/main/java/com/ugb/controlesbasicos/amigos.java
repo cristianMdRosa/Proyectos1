@@ -1,98 +1,77 @@
 package com.ugb.controlesbasicos;
 
 public class amigos {
-    String idAmigo;
-    String nombre;
-    String direccion;
-    String telefono;
-    String email;
-    String dui;
-    String urlFotoAmigo;
-    String urlFotoAmigoFirestore;
-    String token;
+    String idproductos;
+    String codigo;
+    String descripcion;
+    String marca;
+    String presentacion;
+    String precio;
+    String urlFotoProdu;
 
-    public amigos(){}
-    public amigos(String idAmigo, String nombre, String direccion, String telefono, String email, String dui, String urlFoto, String urlFotoAmigoFirestore, String token) {
-        this.idAmigo = idAmigo;
-        this.nombre = nombre;
-        this.direccion = direccion;
-        this.telefono = telefono;
-        this.email = email;
-        this.dui = dui;
-        this.urlFotoAmigo = urlFoto;
-        this.urlFotoAmigoFirestore = urlFotoAmigoFirestore;
-        this.token = token;
+    public amigos(String idproductos, String codigo, String descripcion, String marca, String presentacion, String precio, String urlFoto) {
+        this.idproductos = idproductos;
+        this.codigo = codigo;
+        this.descripcion = descripcion;
+        this.marca = marca;
+        this.presentacion = presentacion;
+        this.precio = precio;
+        this.urlFotoProdu = urlFoto;
     }
 
-    public String getUrlFotoAmigoFirestore() {
-        return urlFotoAmigoFirestore;
+    public String getUrlFotoProdu() {
+        return urlFotoProdu;
     }
 
-    public void setUrlFotoAmigoFirestore(String urlFotoAmigoFirestore) {
-        this.urlFotoAmigoFirestore = urlFotoAmigoFirestore;
+    public void setUrlFotoProdu(String urlFotoProdu) {
+        this.urlFotoProdu = urlFotoProdu;
     }
 
-    public String getToken() {
-        return token;
+    public String getIdproductos() {
+        return idproductos;
     }
 
-    public void setToken(String token) {
-        this.token = token;
+    public void setIdproductos(String idproductos) {
+        this.idproductos = idproductos;
     }
 
-    public String getUrlFotoAmigo() {
-        return urlFotoAmigo;
+    public String getCodigo() {
+        return codigo;
     }
 
-    public void setUrlFotoAmigo(String urlFotoAmigo) {
-        this.urlFotoAmigo = urlFotoAmigo;
+    public void setCodigo(String codigo) {
+        this.codigo = codigo;
     }
 
-    public String getIdAmigo() {
-        return idAmigo;
+    public String getDescripcion() {
+        return descripcion;
     }
 
-    public void setIdAmigo(String idAmigo) {
-        this.idAmigo = idAmigo;
+    public void setDescripcion(String descripcion) {
+        this.descripcion = descripcion;
     }
 
-    public String getNombre() {
-        return nombre;
+    public String getMarca() {
+        return marca;
     }
 
-    public void setNombre(String nombre) {
-        this.nombre = nombre;
+    public void setMarca(String marca) {
+        this.marca = marca;
     }
 
-    public String getDireccion() {
-        return direccion;
+    public String getPresentacion() {
+        return presentacion;
     }
 
-    public void setDireccion(String direccion) {
-        this.direccion = direccion;
+    public void setPresentacion(String presentacion) {
+        this.presentacion = presentacion;
     }
 
-    public String getTelefono() {
-        return telefono;
+    public String getPrecio() {
+        return precio;
     }
 
-    public void setTelefono(String telefono) {
-        this.telefono = telefono;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public String getDui() {
-        return dui;
-    }
-
-    public void setDui(String dui) {
-        this.dui = dui;
+    public void setPrecio(String precio) {
+        this.precio = precio;
     }
 }
